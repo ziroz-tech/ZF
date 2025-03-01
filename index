@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>企業ホームページ - Startup Portfolio & Services</title>
+  <!-- Three.js ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+  <!-- GSAP ScrollTrigger プラグイン -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ScrollTrigger.min.js"></script>
+  <!-- GSAP Modifiers プラグイン -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ModifiersPlugin.min.js"></script>
+  <style>
+    /* リセット */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; }
+
+    /* ヘッダー */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.95);
+      padding: 15px 30px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .logo {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #0077ff;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 30px;
+      margin: 0;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #0077ff;
+    }
+    /* ヘッダー等、波打つテキスト対象は .wavy クラス */
+    .wavy { display: inline-block; }
+    
+    /* 各セクション */
+    section {
+      position: relative;
+      padding: 120px 20px 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+    section h2 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    section p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto 40px;
+    }
+    
+    /* 背景画像（必要に応じて） */
+    .bg-image { 
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      z-index: -1;
+    }
+    
+    /* ヒーローセクション */
+    #hero {
+      height: 100vh;
+      position: relative;
+    }
+    #hero canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    /* 社名・キャッチコピーをウィンドウ左上に固定 */
+    #hero .content {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 20;
+      color: #fff;
+      text-align: left;
+    }
+    #hero .content h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    #hero .content p {
+      font-size: 1.2em;
+    }
+    
+    /* Project セクション */
+    #lineup {
+      background: #fff;
+      position: relative;
+    }
+    #lineup h2 {
+      margin-bottom: 40px;
+    }
+    /* Project 背景切替用 */
+    .project-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      z-index: -1;
+    }
+    #lineup .project-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      position: relative;
+      z-index: 2;
+    }
+    .project-item {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      width: 280px;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+    .project-item:hover {
+      transform: translateY(-5px);
+    }
+    /* Projectカードのタイトルにのみ波打つアニメーションを適用 */
+    .project-item h4 {
+      font-size: 1.3em;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .project-item p {
+      font-size: 0.95em;
+      text-align: left;
+    }
+    
+    /* Works セクション (Shop と同様の横スクロールレイアウト) */
+    #works {
+      background: #fafafa;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Works セクション用グラデーションオーバーレイ */
+    #works:before, #works:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 10%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #works:before {
+      left: 0;
+      background: linear-gradient(to right, #fafafa, transparent);
+    }
+    #works:after {
+      right: 0;
+      background: linear-gradient(to left, #fafafa, transparent);
+    }
+    #works h2 {
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 11;
+    }
+    .works-marquee {
+      display: flex;
+      gap: 30px;
+    }
+    .works-card {
+      position: relative;
+      width: 280px;
+      height: 180px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .works-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .works-card .works-title {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 2;
+      font-size: 1.3em;
+      color: #fff;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    }
+    
+    /* About Us / 会社概要 (CONTACT の直上) */
+    #feature {
+      background: #f7f7f7;
+    }
+    #feature .about-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    #feature .about-container p {
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+    
+    /* NEWS セクション */
+    #news .news-list {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    #news .news-item {
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    #news .news-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* LOCATION セクション */
+    #location {
+      background: #f1f1f1;
+    }
+    
+    /* SHOP セクション */
+    #shop {
+      background: #fafafa;
+      overflow: hidden;
+      position: relative;
+    }
+    #shop:before, #shop:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 10%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #shop:before {
+      left: 0;
+      background: linear-gradient(to right, #fafafa, transparent);
+    }
+    #shop:after {
+      right: 0;
+      background: linear-gradient(to left, #fafafa, transparent);
+    }
+    #shop h2 {
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 11;
+    }
+    .shop-marquee {
+      display: flex;
+      gap: 30px;
+    }
+    .shop-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      width: 280px;
+      flex-shrink: 0;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    .shop-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .shop-card h4 {
+      font-size: 1.3em;
+      margin-bottom: 5px;
+    }
+    .shop-card p {
+      font-size: 0.95em;
+    }
+    .shop-card a {
+      font-size: 0.85em;
+      color: #0077ff;
+      text-decoration: none;
+    }
+    
+    /* CONTACT セクション */
+    #contact form {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    #contact form input, #contact form textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      border-radius: 5px;
+    }
+    #contact form button {
+      padding: 12px;
+      font-size: 1.1em;
+      border: none;
+      background: #0077ff;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    #contact form button:hover {
+      background: #005bb5;
+    }
+    
+    /* フッター */
+    footer {
+      padding: 40px 20px;
+      background: #222;
+      color: #ccc;
+      text-align: center;
+    }
+    footer a {
+      color: #0077ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header>
+    <div class="logo">Zfront.inc</div>
+    <nav>
+      <ul>
+        <li><a class="wavy" href="#hero">HOME</a></li>
+        <li><a class="wavy" href="#lineup">Project</a></li>
+        <li><a class="wavy" href="#works">Works</a></li>
+        <li><a class="wavy" href="#shop">Products</a></li>
+        <li><a class="wavy" href="#news">NEWS</a></li>
+        <li><a class="wavy" href="#location">LOCATION</a></li>
+        <li><a class="wavy" href="#feature">About Us</a></li>
+        <li><a class="wavy" href="#contact">CONTACT</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ヒーローセクション -->
+  <section id="hero">
+    <canvas id="three-canvas"></canvas>
+    <!-- オプション背景画像 -->
+    <!-- <div class="bg-image" style="background-image: url('path/to/your-hero-bg.jpg');"></div> -->
+    <div class="content">
+      <h1 class="wavy">企業名</h1>
+      <p class="wavy">新時代の3D体験と革新的なサービスで未来を創造</p>
+    </div>
+  </section>
+
+  <!-- Project セクション -->
+  <section id="lineup" class="scroll-section">
+    <h2>Project</h2>
+    <!-- 背景切替用要素 -->
+    <div class="project-bg" id="project-bg" style="background-image: url('https://via.placeholder.com/1200x800?text=Default');"></div>
+    <div class="project-container">
+      <div class="project-item" data-bg="https://via.placeholder.com/1200x800?text=3DDesign">
+        <h4 class="wavy">3DDesign</h4>
+        <p>国内ビックタイトル参加の経験を活かした、キャラクター/背景/小物までのワンストップかつ高クオリティのアセットの提供</p>
+      </div>
+      <div class="project-item" data-bg="https://via.placeholder.com/1200x800?text=Game+App">
+        <h4 class="wavy">ゲーム・アプリ開発</h4>
+        <p>UnrealEngineを駆使した自社ＩＰのゲームおよびアプリの企画・開発・販売</p>
+      </div>
+      <div class="project-item" data-bg="https://via.placeholder.com/1200x800?text=Web+Design">
+        <h4 class="wavy">WEB制作・運営</h4>
+        <p>要望に応じたＷＥＢサイトの制作と運営補助</p>
+      </div>
+      <div class="project-item" data-bg="https://via.placeholder.com/1200x800?text=Hydroponics">
+        <h4 class="wavy">水耕栽培</h4>
+        <p>３Ｄプリンターを用いた独自商品の開発・販売</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Works セクション -->
+  <section id="works" class="scroll-section">
+    <h2>Works</h2>
+    <div class="works-marquee" id="works-marquee">
+      <!-- Worksカードは動的に生成（デフォルトデータ使用） -->
+    </div>
+  </section>
+
+    <!-- SHOP セクション -->
+  <section id="shop" class="scroll-section">
+    <h2>Products</h2>
+    <div class="shop-marquee" id="shop-marquee">
+        <!-- CSVまたはデフォルトデータから生成されたショップカードが挿入 -->
+    </div>
+  </section>
+
+  <!-- NEWS セクション -->
+  <section id="news" class="scroll-section">
+    <h2>NEWS</h2>
+    <div class="news-list">
+      <div class="news-item">
+        <p><strong>2025.04.01</strong> - 新ホームページ公開</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCATION セクション -->
+  <section id="location" class="scroll-section">
+    <h2>LOCATION</h2>
+    <p>ショールームや実際に製品が導入されている施設のご案内。<br>
+      詳細情報は各拠点ページからご確認いただけます。</p>
+    <button onclick="location.href='#'">View More</button>
+  </section>
+
+  <!-- About Us / 会社概要 (CONTACT の直上) -->
+  <section id="feature" class="scroll-section">
+    <h2>About Us</h2>
+    <div class="about-container">
+      <p>
+        社名：合同会社 ZFront<br>
+        本社：日本　福岡県中央区<br>
+        代表者：代表取締役 有田光希<br>
+        資本金：10万円<br>
+        事業内容：<br>
+        ・3Dモデル制作（キャラクター、背景、プロップ）<br>
+        ・ゲーム・アプリ開発<br>
+        ・ホームページ制作<br>
+        ・水耕栽培製品の企画・製造・販売
+      </p>
+    </div>
+  </section>
+
+  <!-- CONTACT セクション -->
+  <section id="contact" class="scroll-section">
+    <h2>CONTACT</h2>
+    <p>お問い合わせは以下のフォームよりお気軽にご連絡ください。</p>
+    <form>
+      <input type="text" placeholder="お名前" required>
+      <input type="email" placeholder="メールアドレス" required>
+      <textarea placeholder="お問い合わせ内容" rows="5" required></textarea>
+      <button type="submit">送信</button>
+    </form>
+  </section>
+
+  <!-- フッター -->
+  <footer>
+    <p>&copy; 2025 ZFront.ink. All Rights Reserved.</p>
+    <p><a href="#">PRIVACY POLICY</a></p>
+  </footer>
+
+  <!-- Three.js を用いた3Dアニメーション＆インタラクション -->
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // 例として立方体を生成
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+    
+    camera.position.z = 3;
+    const baseSpeedX = 0.01, baseSpeedY = 0.01;
+    let interactiveRotationX = 0, interactiveRotationY = 0;
+    let isPointerDown = false, lastPointerX, lastPointerY;
+    const canvas = renderer.domElement;
+    
+    canvas.addEventListener('pointerdown', (e) => {
+      isPointerDown = true;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      const deltaX = e.clientX - lastPointerX;
+      const deltaY = e.clientY - lastPointerY;
+      interactiveRotationY += deltaX * 0.0005;
+      interactiveRotationX += deltaY * 0.0005;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+    });
+    canvas.addEventListener('pointerup', () => { isPointerDown = false; });
+    canvas.addEventListener('pointerleave', () => { isPointerDown = false; });
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += baseSpeedX + interactiveRotationX;
+      cube.rotation.y += baseSpeedY + interactiveRotationY;
+      interactiveRotationX *= 0.95;
+      interactiveRotationY *= 0.95;
+      renderer.render(scene, camera);
+    }
+    animate();
+    
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+
+  <!-- GSAP を用いたスクロール連動アニメーション＆ SHOP マルquee -->
+  <script>
+    gsap.registerPlugin(ScrollTrigger, ModifiersPlugin);
+    
+    gsap.to("#hero canvas", {
+      yPercent: 20,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true
+      }
+    });
+    
+    gsap.utils.toArray(".scroll-section").forEach(section => {
+      gsap.from(section, {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+          toggleActions: "play none none reverse"
+        }
+      });
+    });
+    
+    function startMarquee() {
+      const marquee = document.getElementById('shop-marquee');
+      while (marquee.scrollWidth < window.innerWidth * 2) {
+        marquee.innerHTML += marquee.innerHTML;
+      }
+      const width = marquee.scrollWidth / 2;
+      gsap.to(marquee, {
+        x: -width,
+        ease: "none",
+        duration: width / 50,
+        modifiers: { x: (x) => (parseFloat(x) % width) + "px" },
+        repeat: -1
+      });
+    }
+  </script>
+
+  <!-- CSV読み込み＆ショップカード生成 (SHOP セクション) -->
+  <script>
+    let shopDataLoaded = false;
+    function parseCSV(text) {
+      const lines = text.trim().split("\n");
+      const result = [];
+      const headers = lines[0].split(",");
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(",");
+        headers.forEach((header, index) => {
+          obj[header.trim()] = currentline[index] ? currentline[index].trim() : "";
+        });
+        result.push(obj);
+      }
+      return result;
+    }
+    function loadShopData() {
+      fetch('shop-items.csv')
+        .then(response => response.text())
+        .then(data => {
+          shopDataLoaded = true;
+          const shopItems = parseCSV(data);
+          populateShopCards(shopItems);
+        })
+        .catch(error => {
+          console.error("CSV読み込みエラー:", error);
+          populateShopCards([]);
+        });
+    }
+    setTimeout(() => {
+      if (!shopDataLoaded) {
+        populateShopCards([]);
+      }
+    }, 1000);
+    function populateShopCards(items) {
+      const container = document.getElementById('shop-marquee');
+      container.innerHTML = "";
+      if (items.length === 0) {
+        items = [
+          {
+            id: "1",
+            title: "Work in progress",
+            summary: "",
+            detail: "",
+            shopUrl: ""
+          }
+        ];
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'shop-card';
+        card.innerHTML = `
+          <h4 class="wavy">${item.title}</h4>
+          <p>${item.summary}</p>
+          <a href="${item.shopUrl}" target="_blank">View on Booth</a>
+        `;
+        container.appendChild(card);
+      });
+      startMarquee();
+    }
+    loadShopData();
+  </script>
+
+  <!-- Works セクション: Shop と同様の横スクロールレイアウト -->
+<!-- Works セクション: Worksカードの動的生成部分 -->
+<script>
+  // 指定された Works デフォルトデータ
+  const defaultWorks = [
+    {
+      title: "妖怪学園Ｙ~ワイワイ学園生活～",
+      bg: "images/youkaiY.JPG",
+      url: "https://www.youkai-watch.jp/yokai-gakuen-y/"
+    },
+    {
+      title: "NI NO KUNIⅡ",
+      bg: "images/ninokuni02.jpg",
+      url: "https://www.ninokuni.jp/rk/"
+    },
+    {
+      title: "The SNACK WORLD TREJARERS",
+      bg: "images/snackWorld.png",
+      url: "https://www.snack-world.jp/trejarers/"
+    },
+    {
+      title: "Yo-kai Watch4++",
+      bg: "images/youkai4++.JPG",
+      url: "https://www.youkai-watch.jp/yw4/"
+    },
+    {
+      title: "Dragon＆colonies",
+      bg: "images/doracolo.JPG",
+      url: "https://www.level5.co.jp/products/dracolo/dracolo.html"
+    },
+    {
+      title: "Fantacy Life online",
+      bg: "images/fantasyLife.png",
+      url: "https://www.fantasylife.jp/flo/"
+    }
+  ];
+  
+  function populateWorksCards(works) {
+    const container = document.getElementById('works-marquee');
+    container.innerHTML = "";
+    works.forEach(work => {
+      const card = document.createElement('div');
+      card.className = 'works-card';
+      card.style.backgroundImage = `url('${work.bg}')`;
+      card.style.backgroundSize = 'cover';
+      card.style.backgroundPosition = 'center';
+      // data-url 属性でリンク先を設定
+      card.setAttribute('data-url', work.url);
+      card.innerHTML = `<div class="works-title wavy">${work.title}</div>`;
+      container.appendChild(card);
+    });
+    startWorksMarquee();
+  }
+  
+  function startWorksMarquee() {
+    const marquee = document.getElementById('works-marquee');
+    // 複製は data-duplicated 属性で一度だけ実施
+    if (!marquee.dataset.duplicated) {
+      marquee.innerHTML += marquee.innerHTML;
+      marquee.dataset.duplicated = "true";
+    }
+    const width = marquee.scrollWidth / 2;
+    gsap.to(marquee, {
+      x: -width,
+      ease: "none",
+      duration: width / 20,  // 速度をゆるめに
+      modifiers: { x: (x) => (parseFloat(x) % width) + "px" },
+      repeat: -1
+    });
+  }
+  
+  // イベントデリゲーションでクリックイベントを設定
+  document.getElementById('works-marquee').addEventListener('click', function(e) {
+    const card = e.target.closest('.works-card');
+    if (card) {
+      window.open(card.getAttribute('data-url'), '_blank');
+    }
+  });
+  
+  populateWorksCards(defaultWorks);
+</script>
+
+
+  <!-- Project セクション 背景切替 -->
+  <script>
+    const projectCards = document.querySelectorAll('.project-item');
+    const projectBg = document.getElementById('project-bg');
+    
+    projectCards.forEach(card => {
+      card.addEventListener('mouseover', () => {
+        const newBg = card.getAttribute('data-bg');
+        gsap.to(projectBg, { opacity: 0, duration: 0.4, onComplete: () => {
+          projectBg.style.backgroundImage = `url('${newBg}')`;
+          gsap.to(projectBg, { opacity: 1, duration: 0.8 });
+        }});
+      });
+      card.addEventListener('mouseout', () => {
+        gsap.to(projectBg, { opacity: 0, duration: 0.8 });
+      });
+    });
+  </script>
+
+  <!-- Wavy Text アニメーション -->
+  <script>
+    function makeTextWavy(selector) {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(el => {
+        const text = el.textContent;
+        el.innerHTML = "";
+        text.split("").forEach(letter => {
+          const span = document.createElement("span");
+          span.textContent = letter;
+          span.style.display = "inline-block";
+          el.appendChild(span);
+        });
+      });
+    }
+    makeTextWavy(".wavy");
+
+    document.querySelectorAll(".wavy").forEach(el => {
+      el.addEventListener("mouseover", () => {
+        const spans = el.querySelectorAll("span");
+        gsap.to(spans, {
+          y: -5,
+          duration: 0.1,
+          ease: "power1.out",
+          stagger: 0.05,
+          onComplete: () => {
+            gsap.to(spans, {
+              y: 0,
+              duration: 0.1,
+              ease: "power1.inOut",
+              stagger: 0.05
+            });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
